@@ -21,9 +21,9 @@ public class Customer {
     public String getAccount_Type(){return Account_type;}
 
 
-    public String toString(){return "이름 : " + Customer_name + "\n계좌 번호: " + Customer_Account
-                +"\n계좌 종류: " + Account_type + "\nID : " + Customer_ID +
-                "\nPW: " + Customer_Password ;}
+    public String toString(){return Customer_name + "/" + Customer_Account
+                +"/" + Account_type + "/" + Customer_ID +
+                "/" + Customer_Password ;}
 
 
 
