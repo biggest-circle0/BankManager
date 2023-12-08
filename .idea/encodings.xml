@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/CustomerAccountManage.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/CustomerAccountManage.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/CustomerInfoManage.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/ManagerMain.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/PanAccAdd.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/PanAccDel.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/PanInfoAdd.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/PanInfoDel.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/GUI/PanInfoRet.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/ManagerMain.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/ManagerServer/Customer.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/ManagerServer/ManagerServerMain.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/PanInfoRet.java" charset="x-windows-949" />
+    <file url="file://$PROJECT_DIR$/src/practice.java" charset="x-windows-949" />
+  </component>
+</project>
