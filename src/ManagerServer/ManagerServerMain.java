@@ -6,16 +6,28 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ManagerServerMain extends JFrame implements ActionListener {
-    private ServerSocket serverSocket;
-    private Socket clientSocket;
-    private ObjectInputStream readObj;
-    private ObjectOutputStream writeObj;
+//    private ServerSocket serverSocket;
+//    private Socket clientSocket;
+//    private ObjectInputStream readObj;
+//    private ObjectOutputStream writeObj;
+
+    private static AsynchronousChannelGroup channelGroup;
+    private static AsynchronousServerSocketChannel serverSocketChannel;
 
     JButton Server_Control;
     JButton Text_reset;
@@ -30,6 +42,7 @@ public class ManagerServerMain extends JFrame implements ActionListener {
 
     public ManagerServerMain() throws IOException{
         InitGUI();
+        startServer();
         initialize();
     }
 
@@ -66,6 +79,7 @@ public class ManagerServerMain extends JFrame implements ActionListener {
     public void initialize() throws IOException {
         addMSG("서버를 생성중입니다.");
 
+
         CustomerList = new ArrayList<>();
         String File_CustomerList = "CustomerList.txt";
         BufferedReader en = new BufferedReader(new FileReader(File_CustomerList));
@@ -92,14 +106,103 @@ public class ManagerServerMain extends JFrame implements ActionListener {
 //            }
             }
 
-        serverSocket = new ServerSocket(9000);
-        clientSocket = serverSocket.accept();
-        addMSG("Socket에 연결");
-        writeObj = new ObjectOutputStream(clientSocket.getOutputStream());
-        readObj = new ObjectInputStream(clientSocket.getInputStream());
+//        serverSocket = new ServerSocket(9000);
+//        clientSocket = serverSocket.accept();
+//        addMSG("Socket에 연결");
+//        writeObj = new ObjectOutputStream(clientSocket.getOutputStream());
+//        readObj = new ObjectInputStream(clientSocket.getInputStream());
+
+
 
         addMSG("서버 생성 완료 . . . ");
         }
+
+//        server
+public void startServer()
+{
+    try
+    {
+        channelGroup = AsynchronousChannelGroup.withFixedThreadPool(Runtime.getRuntime().availableProcessors(), Executors.defaultThreadFactory());
+        serverSocketChannel = AsynchronousServerSocketChannel.open(channelGroup);
+        serverSocketChannel.bind(new InetSocketAddress(5001));
+        SwingUtilities.invokeLater(() ->
+        {
+            addMSG("서버 시작");
+            Server_Control.setText("정지");
+        });
+        serverSocketChannel.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>()
+        {
+            @Override
+            public void completed(AsynchronousSocketChannel socketChannel, Void attachment)
+            {
+                try
+                {
+                    addMSG(socketChannel.getRemoteAddress() + " 접속");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
+//                Client client = new Client(socketChannel, ServerMain.this, customerList);
+//                clientList.add(client);
+//                SwingUtilities.invokeLater(() -> Label_UserCount_2.setText(String.valueOf(clientList.size())));
+//                serverSocketChannel.accept(null, this);
+            }
+
+            @Override
+            public void failed(Throwable exc, Void attachment)
+            {
+                if (serverSocketChannel.isOpen())
+                {
+                    stopServer();
+                }
+            }
+        });
+    }
+    catch (IOException e)
+    {
+        if (serverSocketChannel.isOpen())
+        {
+            stopServer();
+        }
+    }
+}
+
+
+    public void stopServer()
+    {
+//        clientList.clear();
+        if (channelGroup != null && !channelGroup.isShutdown())
+        {
+            try
+            {
+                channelGroup.shutdownNow();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            finally
+            {
+                SwingUtilities.invokeLater(() ->
+                {
+                    addMSG("서버 정지");
+                    Server_Control.setText("시작");
+                });
+            }
+        }
+    }
+
+//    @Override
+//    public void removeClient(Client client)
+//    {
+//        clientList.remove(client);
+//        addMsg(client + "제거됨");
+//        // 현재 접속자수 업데이트
+//        SwingUtilities.invokeLater(() -> Label_UserCount_2.setText(String.valueOf(clientList.size())));
+//    }
+
 
 
 // 필요할진 모르겠지만 시험삼아 만들어본 메서드 (아이디로 비밀번호 찾기)
@@ -160,6 +263,21 @@ public class ManagerServerMain extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e){
+        Object source = e.getSource();
+        if (source.equals(Server_Control)){
+            if (Server_Control.getText().equals("정지")){
+                Server_Control.setText("시작");
+                startServer();
+            }else if (Server_Control.getText().equals("시작")){
+                Server_Control.setText("정지");
+                stopServer();
+
+            }
+        }
+        if (source == Text_reset){
+            ServerLog.setText("");
+            addMSG("텍스트 창이 초기화 되었습니다.");
+        }
 
     }
 

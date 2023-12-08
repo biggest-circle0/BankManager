@@ -1,6 +1,7 @@
 package  GUI;
 import GUI.CustomerAccountManage;
 import GUI.CustomerInfoManage;
+import ManagerServer.ManagerServerMain;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -8,7 +9,13 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ManagerMain extends JFrame implements ActionListener{
     private JButton Btn_CI;
@@ -18,16 +25,20 @@ public class ManagerMain extends JFrame implements ActionListener{
     CustomerAccountManage CAManage;
     PanLogin Pan_Login;
 
-    private Socket clientSocket;
-    private ObjectInputStream readObj;
-    private ObjectOutputStream writeObj;
+//    private Socket clientSocket;
+//    private ObjectInputStream readObj;
+//    private ObjectOutputStream writeObj;
+
+
+    private AsynchronousChannelGroup channelGroup;
+    private AsynchronousSocketChannel channel;
 
 
     public static String adminId;
 
     public ManagerMain() throws IOException{
         InitGUI();
-        initialize();
+        startClient();
         setVisible(true);
     }
 
@@ -36,6 +47,7 @@ public class ManagerMain extends JFrame implements ActionListener{
 //        System.out.println("서버에 연결되었습니다");
 //        writeObj = new ObjectOutputStream(clientSocket.getOutputStream());
 //        readObj = new ObjectInputStream(clientSocket.getInputStream());
+
     }
 
     private void InitGUI()  {
@@ -121,6 +133,44 @@ public class ManagerMain extends JFrame implements ActionListener{
             Btn_CI.setVisible(false);
         }
     }
+
+
+
+    private void startClient() {
+        try {
+            channelGroup = AsynchronousChannelGroup.withFixedThreadPool(Runtime.getRuntime().availableProcessors(), Executors.defaultThreadFactory());
+            channel = AsynchronousSocketChannel.open(channelGroup);
+            channel.connect(new InetSocketAddress("localhost", 5001), null, new CompletionHandler<Void, Void>() {
+                @Override
+                public void completed(Void result, Void attachment) {
+                    System.out.println("뱅크 서버 접속");
+                }
+                @Override
+                public void failed(Throwable exc, Void attachment) {
+                    disconnectServer();
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopClient() {
+        try {
+            if (channelGroup != null && !channelGroup.isShutdown()) {
+                channelGroup.shutdownNow();
+                channelGroup.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); // 기다리도록 추가
+            }
+            System.out.println("연결 종료");
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void disconnectServer() {
+        stopClient();
+    }
+
 
     public static void main(String[] args) throws IOException {
         ManagerMain mm = new ManagerMain();
